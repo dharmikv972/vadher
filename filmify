@@ -1,0 +1,529 @@
+#################################*************filmify_studio.py*******************#####################################################
+## Converted to Filmify Studio Project by: AI Assistant
+## Date: 2023-12-08
+#################################################################################################################################################################################
+from tkinter import Tk, Canvas, Frame, Label, Button, Entry, BOTH, YES, LEFT, TOP, X, RIGHT, Y, Scrollbar, END, messagebox
+from PIL import ImageTk, Image
+import pymysql
+from tkinter import ttk 
+import tkinter as tk
+
+# Database credentials - Modify these as needed
+mypass = ""
+mydatabase = "filmify_db"  # Changed database name
+
+
+# Establish database connection - Moved to global scope for single connection
+try:
+    con = pymysql.connect(host="localhost", user="root", password=mypass, database=mydatabase)
+    cur = con.cursor()
+except pymysql.Error as e:
+    messagebox.showerror("Database Error", f"Failed to connect to database: {e}")
+    exit() # Exit if database connection fails at startup
+
+
+# Global table names - Define once
+itemTable = "studio_items"  # Renamed table
+rentalTable = "item_rentals" # Renamed table
+
+
+#################################*************AddItem Functionality*******************#####################################################
+def itemRegister():
+    """Registers a new item into the database."""
+    item_id = itemInfo1.get()
+    title = itemInfo2.get()
+    description = itemInfo3.get() # Renamed from author to description
+    status = itemInfo4.get().lower() # Standardize status to lowercase
+
+    if not all([item_id, title, description, status]):
+        messagebox.showerror("Input Error", "All fields are required!")
+        return
+
+    insertItems = f"INSERT INTO {itemTable} (item_id, title, description, status) VALUES (%s, %s, %s, %s)" # Renamed columns
+    try:
+        cur.execute(insertItems, (item_id, title, description, status)) # Use parameterized query to prevent SQL injection
+        con.commit()
+        messagebox.showinfo('Success', "Item added successfully")
+    except pymysql.Error as e:
+        messagebox.showerror("Database Error", f"Can't add data to Database: {e}")
+
+    root.destroy()
+
+
+def addItem():
+    """Opens a window to add a new item."""
+    global itemInfo1, itemInfo2, itemInfo3, itemInfo4, Canvas1, root
+    
+    root = Tk()
+    root.title("Add Item") # Changed title
+    root.minsize(width=400, height=400)
+    root.geometry("600x500")
+
+    Canvas1 = Canvas(root)
+    Canvas1.config(bg="#ff6e40")
+    Canvas1.pack(expand=YES, fill=BOTH)
+
+    headingFrame1 = Frame(root, bg="#FFBB00", bd=5)
+    headingFrame1.place(relx=0.25, rely=0.1, relwidth=0.5, relheight=0.13)
+
+    headingLabel = ttk.Label(headingFrame1, text="Add Studio Items", font=('Courier', 15)) # Changed heading
+    headingLabel.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+    labelFrame = Frame(root, bg='black')
+    labelFrame.place(relx=0.1, rely=0.4, relwidth=0.8, relheight=0.4)
+
+    # Item ID
+    lb1 = ttk.Label(labelFrame, text="Item ID : ") # Changed label
+    lb1.place(relx=0.05, rely=0.2, relheight=0.08)
+    itemInfo1 = Entry(labelFrame)
+    itemInfo1.place(relx=0.3, rely=0.2, relwidth=0.62, relheight=0.08)
+
+    # Title
+    lb2 = ttk.Label(labelFrame, text="Title : ")
+    lb2.place(relx=0.05, rely=0.35, relheight=0.08)
+    itemInfo2 = Entry(labelFrame)
+    itemInfo2.place(relx=0.3, rely=0.35, relwidth=0.62, relheight=0.08)
+
+    # Item Description
+    lb3 = ttk.Label(labelFrame, text="Description : ") # Changed label
+    lb3.place(relx=0.05, rely=0.50, relheight=0.08)
+    itemInfo3 = Entry(labelFrame)
+    itemInfo3.place(relx=0.3, rely=0.50, relwidth=0.62, relheight=0.08)
+
+    # Item Status
+    lb4 = ttk.Label(labelFrame, text="Status(avail/rented) : ") # Changed label
+    lb4.place(relx=0.05, rely=0.65, relheight=0.08)
+    itemInfo4 = Entry(labelFrame)
+    itemInfo4.place(relx=0.3, rely=0.65, relwidth=0.62, relheight=0.08)
+
+    # Submit Button
+    SubmitBtn =ttk.Button(root, text="SUBMIT",  command=itemRegister)
+    SubmitBtn.place(relx=0.28, rely=0.9, relwidth=0.18, relheight=0.08)
+
+    quitBtn =ttk.Button(root, text="Quit", command=root.destroy)
+    quitBtn.place(relx=0.53, rely=0.9, relwidth=0.18, relheight=0.08)
+
+    root.mainloop()
+
+
+#################################*************DeleteItem Functionality*******************#####################################################
+def deleteItem():
+    """Deletes an item record from the database."""
+    item_id = itemInfo1.get()
+
+    if not item_id:
+        messagebox.showerror("Input Error", "Item ID is required!") # Changed message
+        return
+
+    deleteSql = f"DELETE FROM {itemTable} WHERE item_id = %s" # Changed query
+    deleteRental = f"DELETE FROM {rentalTable} WHERE item_id = %s" # Changed query
+    try:
+        cur.execute(deleteSql, (item_id,))
+        if cur.rowcount == 0:  # Check if any rows were deleted
+            messagebox.showinfo("Error", "No item found with the given ID") # Changed message
+        else:
+            con.commit()
+            cur.execute(deleteRental, (item_id,)) # Attempt to delete from rental table as well
+            con.commit()
+            messagebox.showinfo('Success', "Item Record Deleted Successfully") # Changed message
+    except pymysql.Error as e:
+        messagebox.showerror("Database Error", f"Error deleting item: {e}") # Changed message
+
+    itemInfo1.delete(0, END)
+    root.destroy()
+
+
+def delete():
+    """Opens a window to delete an item."""
+    global itemInfo1, Canvas1, root
+
+    root = Tk()
+    root.title("Delete Item") # Changed title
+    root.minsize(width=400, height=400)
+    root.geometry("600x500")
+
+    Canvas1 = Canvas(root)
+    Canvas1.config(bg="#006B38")
+    Canvas1.pack(expand=YES, fill=BOTH)
+
+    headingFrame1 = Frame(root, bg="#FFBB00", bd=5)
+    headingFrame1.place(relx=0.25, rely=0.1, relwidth=0.5, relheight=0.13)
+
+    headingLabel = ttk.Label(headingFrame1, text="Delete Studio Item", font=('Courier', 15)) # Changed heading
+    headingLabel.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+    labelFrame = Frame(root, bg='black')
+    labelFrame.place(relx=0.1, rely=0.3, relwidth=0.8, relheight=0.5)
+
+    # Item ID to Delete
+    lb2 = ttk.Label(labelFrame, text="Item ID : ") # Changed label
+    lb2.place(relx=0.05, rely=0.5)
+    itemInfo1 = Entry(labelFrame)
+    itemInfo1.place(relx=0.3, rely=0.5, relwidth=0.62)
+
+    # Submit Button
+    SubmitBtn =ttk.Button(root, text="SUBMIT",  command=deleteItem)
+    SubmitBtn.place(relx=0.28, rely=0.9, relwidth=0.18, relheight=0.08)
+
+    quitBtn =ttk.Button(root, text="Quit",  command=root.destroy)
+    quitBtn.place(relx=0.53, rely=0.9, relwidth=0.18, relheight=0.08)
+
+    root.mainloop()
+
+
+#################################*************ViewItem Functionality*******************#####################################################
+def View():
+    """Opens a window to view all items in a table format."""
+    root = Tk()
+    root.title("View Studio Items") # Changed title
+    root.minsize(width=600, height=500) # Adjusted to fit table better
+    root.geometry("800x600") # Adjusted to fit table better
+
+    Canvas1 = Canvas(root)
+    Canvas1.config(bg="#12a4d9")
+    Canvas1.pack(expand=YES, fill=BOTH)
+
+    headingFrame1 = Frame(root, bg="#FFBB00", bd=5)
+    headingFrame1.place(relx=0.25, rely=0.05, relwidth=0.5, relheight=0.1) # Adjusted rely
+
+    headingLabel = ttk.Label(headingFrame1, text="View Studio Items", font=('Courier', 15)) # Changed heading
+    headingLabel.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+    labelFrame = Frame(root, bg='black')
+    labelFrame.place(relx=0.05, rely=0.2, relwidth=0.9, relheight=0.7) # Adjusted position and size
+
+    # Create a Treeview for the table
+    tree = ttk.Treeview(labelFrame, columns=('ItemID', 'Title', 'Description', 'Status'), show='headings') # Changed columns
+    tree.pack(side=LEFT, fill=BOTH, expand=YES)
+
+    # Define headings
+    tree.heading('ItemID', text='Item ID', anchor='center') # More descriptive heading
+    tree.heading('Title', text='Title', anchor='center')
+    tree.heading('Description', text='Description', anchor='center') # Changed heading
+    tree.heading('Status', text='Status', anchor='center')
+
+    # Define column widths and set anchor to center
+    tree.column('ItemID', width=100, anchor='center')
+    tree.column('Title', width=250, anchor='center') # Increased width for title
+    tree.column('Description', width=200, anchor='center') # Increased width for description
+    tree.column('Status', width=100, anchor='center')
+
+    # Adding a scrollbar
+    scrollbar = Scrollbar(labelFrame, orient="vertical", command=tree.yview)
+    scrollbar.pack(side=RIGHT, fill=Y)
+    tree.configure(yscroll=scrollbar.set)
+
+
+    def fetch_items(): # Changed function name
+        """Fetches items from the database and populates the Treeview.""" # Changed description
+        tree.delete(*tree.get_children()) # Clear existing data
+        getItems = f"SELECT * FROM {itemTable}" # Changed query
+        try:
+            cur.execute(getItems)
+            items = cur.fetchall() # Changed variable name
+            for item in items: # Changed variable name
+                tree.insert('', 'end', values=item)
+        except pymysql.Error as e:
+            messagebox.showerror("Database Error", f"Failed to fetch items from database: {e}") # Changed message
+
+    fetch_items() # Call fetch_items to load data
+
+    # Bind the treeview to resize columns when the window is resized - Improved resizing
+    def on_resize(event):
+        total_width = event.width
+        tree_widths = [100, 250, 200, 100]  # Adjusted widths to match column widths
+        total_original_width = sum(tree_widths)
+        scale_factor = total_width / total_original_width
+
+        for i, col in enumerate(['ItemID', 'Title', 'Description', 'Status']): # Changed columns
+            new_width = int(tree_widths[i] * scale_factor)
+            tree.column(col, width=new_width)
+
+    labelFrame.bind("<Configure>", on_resize)
+
+
+    quitBtn =ttk.Button(root, text="Quit", bg='#f7f1e3', fg='black', command=root.destroy)
+    quitBtn.place(relx=0.4, rely=0.92, relwidth=0.18, relheight=0.06) # Adjusted position
+
+    root.mainloop()
+
+
+#################################*************RentItem Functionality*******************#####################################################
+allItemId = []  # List To store all Item IDs - Global within this section
+
+def rent(): # Changed function name
+    """Rents an item to a user.""" # Changed description
+    global rentBtn, labelFrame, lb1, inf1, inf2, quitBtn, root, Canvas1, status # Changed button name
+
+    item_id = inf1.get() # Changed variable name
+    rentedto = inf2.get() # Changed variable name
+
+    if not all([item_id, rentedto]): # Changed variable name
+        messagebox.showerror("Input Error", "Item ID and Rented To are required!") # Changed message
+        return
+
+    rentBtn.destroy() # Changed button name
+    labelFrame.destroy()
+    lb1.destroy()
+    inf1.destroy()
+    inf2.destroy()
+
+    extractItemId = f"SELECT item_id FROM {itemTable}" # Changed query and variable name
+    try:
+        cur.execute(extractItemId) # Changed variable name
+        con.commit()
+        all_item_ids_db = [item[0] for item in cur.fetchall()] # Fetch all item IDs efficiently # Changed variable name
+
+        if item_id in all_item_ids_db: # Changed variable name
+            checkAvail = f"SELECT status FROM {itemTable} WHERE item_id = %s" # Changed query
+            cur.execute(checkAvail, (item_id,)) # Changed variable name
+            con.commit()
+            status_result = cur.fetchone() # Fetch one result
+            if status_result:
+                check = status_result[0]
+                if check == 'avail':
+                    status = True
+                    updateStatus = f"UPDATE {itemTable} SET status = 'rented' WHERE item_id = %s" # Changed query
+                else:
+                    status = False
+            else:
+                status = False # Item not found (shouldn't happen if item_id is in all_item_ids_db) # Changed message
+        else:
+            messagebox.showinfo("Error", "Item ID not present") # Changed message
+            status = False # Ensure status is set to False if item ID not present
+
+    except pymysql.Error as e:
+        messagebox.showerror("Database Error", f"Can't fetch Item IDs: {e}") # Changed message
+        status = False # Ensure status is set to False in case of database error
+
+
+    rentalSql = f"INSERT INTO {rentalTable} (item_id, rentedto) VALUES (%s, %s)" # Changed query and table name
+
+    try:
+        if item_id in all_item_ids_db and status == True: # Changed variable name
+            cur.execute(rentalSql, (item_id, rentedto)) # Changed variable name
+            con.commit()
+            cur.execute(updateStatus, (item_id,)) # Changed variable name
+            con.commit()
+            messagebox.showinfo('Success', "Item Rented Successfully") # Changed message
+            root.destroy()
+        else:
+            messagebox.showinfo('Message', "Item Already Rented or not available") # Changed message
+            root.destroy()
+    except pymysql.Error as e:
+        messagebox.showerror("Database Error", f"Error renting item: {e}") # Changed message
+    finally:
+        allItemId.clear() # Clear allItemId in finally block to ensure it's always cleared
+
+
+def rentItem(): # Changed function name
+    """Opens a window to rent an item.""" # Changed description
+    global rentBtn, labelFrame, lb1, inf1, inf2, quitBtn, root, Canvas1, status # Changed button name
+
+    root = Tk()
+    root.title("Rent Item") # Changed title
+    root.minsize(width=400, height=400)
+    root.geometry("600x500")
+
+    Canvas1 = Canvas(root)
+    Canvas1.config(bg="#D6ED17")
+    Canvas1.pack(expand=YES, fill=BOTH)
+
+    headingFrame1 = Frame(root, bg="#FFBB00", bd=5)
+    headingFrame1.place(relx=0.25, rely=0.1, relwidth=0.5, relheight=0.13)
+
+    headingLabel = ttk.Label(headingFrame1, text="Rent Studio Item", font=('Courier', 15)) # Changed heading
+    headingLabel.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+    labelFrame = Frame(root, bg='black')
+    labelFrame.place(relx=0.1, rely=0.3, relwidth=0.8, relheight=0.5)
+
+    # Item ID
+    lb1 = ttk.Label(labelFrame, text="Item ID : ") # Changed label
+    lb1.place(relx=0.05, rely=0.2)
+    inf1 = Entry(labelFrame)
+    inf1.place(relx=0.3, rely=0.2, relwidth=0.62)
+
+    # Rented To User name
+    lb2 = ttk.Label(labelFrame, text="Rented To : ") # Changed label
+    lb2.place(relx=0.05, rely=0.4)
+    inf2 = Entry(labelFrame)
+    inf2.place(relx=0.3, rely=0.4, relwidth=0.62)
+
+    # Rent Button
+    rentBtn =ttk.Button(root, text="Rent",  command=rent) # Changed button name
+    rentBtn.place(relx=0.28, rely=0.9, relwidth=0.18, relheight=0.08)
+
+    quitBtn =ttk.Button(root, text="Quit",  command=root.destroy)
+    quitBtn.place(relx=0.53, rely=0.9, relwidth=0.18, relheight=0.08)
+
+    root.mainloop()
+
+
+#################################*************ReturnItem Functionality*******************#####################################################
+allItemId_return = [] # List To store all Item IDs for return - Separate global list to avoid conflicts
+
+def return_item_func(): # Changed function name
+    """Returns an item and updates the database.""" # Changed description
+    global SubmitBtn, labelFrame, lb1, itemInfo1, quitBtn, root, Canvas1, status # Changed variable name
+
+    item_id = itemInfo1.get() # Changed variable name
+
+    if not item_id: # Changed variable name
+        messagebox.showerror("Input Error", "Item ID is required!") # Changed message
+        return
+
+    extractItemId = f"SELECT item_id FROM {rentalTable}" # Changed query and variable name
+    try:
+        cur.execute(extractItemId) # Changed variable name
+        con.commit()
+        all_rented_item_ids_db = [item[0] for item in cur.fetchall()] # Fetch all rented item IDs # Changed variable name
+
+        if item_id in all_rented_item_ids_db: # Changed variable name
+            checkAvail = f"SELECT status FROM {itemTable} WHERE item_id = %s" # Changed query
+            cur.execute(checkAvail, (item_id,)) # Changed variable name
+            con.commit()
+            status_result = cur.fetchone()
+            if status_result:
+                check = status_result[0]
+                if check == 'rented':
+                    status = True
+                else:
+                    status = False # Should not happen ideally
+            else:
+                status = False # Item not found in items table (unlikely) # Changed message
+        else:
+            messagebox.showinfo("Error", "Item ID not rented") # Changed message
+            status = False # Ensure status is set to False if item ID not in rented table
+    except pymysql.Error as e:
+        messagebox.showerror("Database Error", f"Can't fetch Item IDs: {e}") # Changed message
+        status = False # Ensure status is set to False on DB error
+
+
+    rentalSql = f"DELETE FROM {rentalTable} WHERE item_id = %s" # Changed query and table name
+    updateStatus = f"UPDATE {itemTable} SET status = 'avail' WHERE item_id = %s" # Changed query
+
+    try:
+        if item_id in all_rented_item_ids_db and status == True: # Changed variable name
+            cur.execute(rentalSql, (item_id,)) # Changed variable name
+            con.commit()
+            cur.execute(updateStatus, (item_id,)) # Changed variable name
+            con.commit()
+            messagebox.showinfo('Success', "Item Returned Successfully") # Changed message
+        else:
+            messagebox.showinfo('Message', "Please check the Item ID or item is already available") # Changed message
+            root.destroy()
+    except pymysql.Error as e:
+        messagebox.showerror("Database Error", f"Error returning item: {e}") # Changed message
+    finally:
+        allItemId_return.clear() # Clear return item ID list in finally block
+
+
+def returnItem(): # Changed function name
+    """Opens a window to return an item.""" # Changed description
+    global itemInfo1, SubmitBtn, quitBtn, Canvas1, root, labelFrame, lb1 # Changed variable name
+
+    root = Tk()
+    root.title("Return Item") # Changed title
+    root.minsize(width=400, height=400)
+    root.geometry("600x500")
+
+    Canvas1 = Canvas(root)
+    Canvas1.config(bg="#006B38")
+    Canvas1.pack(expand=YES, fill=BOTH)
+
+    headingFrame1 = Frame(root, bg="#FFBB00", bd=5)
+    headingFrame1.place(relx=0.25, rely=0.1, relwidth=0.5, relheight=0.13)
+
+    headingLabel = ttk.Label(headingFrame1, text="Return Studio Item", font=('Courier', 15)) # Changed heading
+    headingLabel.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+    labelFrame = Frame(root, bg='black')
+    labelFrame.place(relx=0.1, rely=0.3, relwidth=0.8, relheight=0.5)
+
+    # Item ID to Return
+    lb1 = ttk.Label(labelFrame, text="Item ID : ") # Changed label
+    lb1.place(relx=0.05, rely=0.5)
+    itemInfo1 = Entry(labelFrame)
+    itemInfo1.place(relx=0.3, rely=0.5, relwidth=0.62)
+
+    # Submit Button
+    SubmitBtn =ttk.Button(root, text="Return", command=return_item_func) # Changed command
+    SubmitBtn.place(relx=0.28, rely=0.9, relwidth=0.18, relheight=0.08)
+
+    quitBtn =ttk.Button(root, text="Quit",  command=root.destroy)
+    quitBtn.place(relx=0.53, rely=0.9, relwidth=0.18, relheight=0.08)
+
+    root.mainloop()
+
+
+#################################*************Main Window*******************#####################################################
+# Main application window setup
+root = tk.Tk()
+
+root.title("Filmify Studio Item Management") # Changed title
+root.resizable() # Adjusted initial size
+# root.resizable(False, False) # Consider if resizable should be enabled
+
+style = ttk.Style()
+style.configure('menu.TButton',
+                foreground='black',      # Text color
+                background='#2C3E50',    # Background color (Dark Blue-Gray)
+                borderwidth=4,           # Border width
+                relief='raised',         # 3D effect
+                font=('Arial', 13, 'bold'),  # Font style
+                padding=10,              # Padding around text
+                focuscolor='none')
+style.map("menu.TButton",
+          background=[("active", "#2980B9"), ("pressed", "#1ABC9C")],
+          foreground=[("disabled", "gray")])
+
+style.configure('TLabel',
+                borderwidth=4,  
+                foreground='white',      # Text color
+                background='#2C3E50',    # Label color (doesn't work in ttk)
+                font=('Cancun', 24, 'bold'),
+                relief='groove')
+
+## Background Image
+n = 0.5 # Scaling factor
+background_image = Image.open("pexels-mikhail-nilov-6943636.jpg")
+[imageSizeWidth, imageSizeHeight] = background_image.size
+newImageSizeWidth = int(imageSizeWidth * n)
+newImageSizeHeight = int(imageSizeHeight * n)
+background_image = background_image.resize((newImageSizeWidth, newImageSizeHeight), Image.LANCZOS)
+
+Canvas1 = Canvas(root) # Create Canvas1 *before* PhotoImage
+Canvas1.img = ImageTk.PhotoImage(background_image) # Store PhotoImage as attribute of Canvas1
+img = Canvas1.img # You can still keep 'img' for convenience, but it's now redundant
+
+Canvas1.create_image(300, 340, image=Canvas1.img) # Use Canvas1.img directly
+Canvas1.config(bg="white", width=newImageSizeWidth, height=newImageSizeHeight)
+Canvas1.pack(expand=YES, fill=BOTH)
+headingFrame1 = Frame(root, bg="#FFBB00", bd=5)
+headingFrame1.place(relx=0.2, rely=0.1, relwidth=0.6, relheight=0.16)
+
+headingLabel = ttk.Label(headingFrame1, text="Welcome to Filmify Studio", anchor='center', font=('Cancun', 25))# Centered text # Changed heading
+headingLabel.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+# Buttons - Adjusted positions and sizes for better layout
+btn_width = 0.45
+btn_height = 0.08 # Slightly reduced button height for more spacing
+
+btn1 =ttk.Button(root, text="Add Item Details",  command=addItem ,style='menu.TButton') # Changed button text and command
+btn1.place(relx=0.275, rely=0.4, relwidth=btn_width, relheight=btn_height) # Adjusted relx for centering
+
+btn2 =ttk.Button(root, text="Delete Item",  command=delete,style='menu.TButton') # Changed button text
+btn2.place(relx=0.275, rely=0.5, relwidth=btn_width, relheight=btn_height) # Adjusted rely and relx
+
+btn3 =ttk.Button(root, text="View Item List",  command=View,style='menu.TButton') # Changed button text
+btn3.place(relx=0.275, rely=0.6, relwidth=btn_width, relheight=btn_height) # Adjusted rely and relx
+
+btn4 =ttk.Button(root, text="Rent Item",  command=rentItem,style='menu.TButton') # Changed button text and command
+btn4.place(relx=0.275, rely=0.7, relwidth=btn_width, relheight=btn_height) # Adjusted rely and relx
+
+btn5 =ttk.Button(root, text="Return Item", command=returnItem,style='menu.TButton') # Changed button text and command
+btn5.place(relx=0.275, rely=0.8, relwidth=btn_width, relheight=btn_height) # Adjusted rely and relx
+
+
+root.mainloop()
