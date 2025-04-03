@@ -52,7 +52,7 @@
     <div id="content"></div>
     <div id="status"></div>
 
-        <script>
+    <script>
         const DOC_ID = '1aJx5RdncnGFqi8VIvtypZOaNQdyvz4xCQkfIPOiHIfs';
         const contentDiv = document.getElementById('content');
         const statusDiv = document.getElementById('status');
@@ -113,7 +113,7 @@
             contentDiv.style.display = 'block';
         }
 
-        function copyToClipboard() {
+        async function copyToClipboard() {
             const text = localStorage.getItem('cachedContent') || '';
             try {
                 await navigator.clipboard.writeText(text);
@@ -134,12 +134,8 @@
         }
 
         async function backupContent() {
-            if (navigator.onLine) {
-                await fetchAndCache();
-                copyToClipboard();
-            } else {
-                updateStatus('Cannot backup offline.');
-            }
+            await fetchAndCache();
+            copyToClipboard();
         }
 
         function updateStatus(message) {
@@ -152,6 +148,5 @@
             if (navigator.onLine) fetchAndCache();
         }, 30000);
     </script>
-
 </body>
 </html>
