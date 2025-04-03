@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Docs Cache</title>
+    <style>
+        body { font-family: Arial, text-align: center; margin: 20px; }
+        #status { color: green; margin: 15px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>One-Click Docs Backup</h2>
+    <button onclick="cacheDocs()">⚠️ Backup Now ⚠️</button>
+    <div id="status"></div>
+
+    <script>
+        const DOC_ID = '1aJx5RdncnGFqi8VIvtypZOaNQdyvz4xCQkfIPOiHIfs';
+        
+        async function cacheDocs() {
+            try {
+                // Fetch text content from Google Docs
+                const response = await fetch(`https://docs.google.com/document/d/${DOC_ID}/export?format=txt`);
+                const text = await response.text();
+                
+                // Store in localStorage and sessionStorage (dual backup)
+                localStorage.setItem('cachedDoc', text);
+                sessionStorage.setItem('cachedDoc', text);
+                
+                // Create downloadable backup
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'notes.txt';
+                document.body.appendChild(a);
+                a.click();
+                
+                document.getElementById('status').innerHTML = 
+                    '✅ Backup successful!<br>File saved: notes.txt<br>Works offline!';
+            } catch (error) {
+                document.getElementById('status').innerHTML = 
+                    '❌ Connection failed!<br>1. Open docs link<br>2. Ctrl+A<br>3. Ctrl+V here';
+            }
+        }
+
+        // Auto-trigger if param present (bookmarklet style)
+        if(new URLSearchParams(window.location.search).has('backup')) {
+            cacheDocs();
+        }
+    </script>
+</body>
+</html>
