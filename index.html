@@ -33,19 +33,10 @@
             margin-top: 10px;
             font-size: 0.9em;
         }
-        .offline-message {
-            background-color: #fdd;
-            color: #333;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            display: none; /* Hidden by default */
-        }
     </style>
 </head>
 <body>
     <h2>Study Notes</h2>
-    <div class="offline-message" id="offlineAlert">You are currently offline. Showing cached content (if available). Please reload to see the latest if you regain internet.</div>
     <button onclick="toggleContent()">Show/Hide</button>
     <button onclick="copyToClipboard()">Copy All</button>
     <button onclick="backupContent()">Backup Now</button>
@@ -54,61 +45,49 @@
 
     <script>
         const DOC_ID = '1aJx5RdncnGFqi8VIvtypZOaNQdyvz4xCQkfIPOiHIfs';
-        const contentDiv = document.getElementById('content');
-        const statusDiv = document.getElementById('status');
-        const offlineAlertDiv = document.getElementById('offlineAlert');
 
-        // Function to update visibility based on online status
-        function updateOnlineStatus() {
-            if (navigator.onLine) {
-                offlineAlertDiv.style.display = 'none';
-                updateStatus('Online');
-                fetchAndCache(); // Try to update cache when back online
-            } else {
-                offlineAlertDiv.style.display = 'block';
-                const cached = localStorage.getItem('cachedContent');
-                if (cached && contentDiv.style.display === 'none') {
-                    showContent(cached);
-                    updateStatus('Offline - Showing cached content');
-                } else if (!cached) {
-                    updateStatus('Offline - No cached content available');
-                } else {
-                    updateStatus('Offline - Showing current content');
-                }
-            }
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
         }
 
         // Load content on startup
         window.addEventListener('load', async () => {
-            updateOnlineStatus(); // Check initial status
+            const cached = localStorage.getItem('cachedContent');
+            if (navigator.onLine) {
+                await fetchAndCache();
+            } else if (cached) {
+                showContent(cached);
+                updateStatus('Offline - Showing cached content');
+            } else {
+                updateStatus('No cached content available');
+            }
         });
-
-        // Listen for online/offline events
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
 
         async function fetchAndCache() {
             try {
                 const response = await fetch(`https://docs.google.com/document/d/${DOC_ID}/export?format=txt`);
                 const text = await response.text();
                 localStorage.setItem('cachedContent', text);
-                if (navigator.onLine && contentDiv.style.display === 'block') {
-                    showContent(text);
-                    updateStatus('Content updated and cached');
-                } else if (navigator.onLine) {
-                    updateStatus('Content cached');
-                }
+                showContent(text);
+                updateStatus('Content updated and cached');
             } catch (error) {
-                if (navigator.onLine) {
-                    const cached = localStorage.getItem('cachedContent') || 'No content available';
-                    showContent(cached);
-                    updateStatus('Online but failed to fetch - showing cached');
-                }
-                // When offline, the updateOnlineStatus function will handle the display
+                const cached = localStorage.getItem('cachedContent') || 'No content available';
+                showContent(cached);
+                updateStatus('Online but failed to fetch - showing cached');
             }
         }
 
         function showContent(text) {
+            const contentDiv = document.getElementById('content');
             contentDiv.textContent = text;
             contentDiv.style.display = 'block';
         }
@@ -130,6 +109,7 @@
         }
 
         function toggleContent() {
+            const contentDiv = document.getElementById('content');
             contentDiv.style.display = contentDiv.style.display === 'none' ? 'block' : 'none';
         }
 
@@ -139,8 +119,8 @@
         }
 
         function updateStatus(message) {
-            statusDiv.textContent = message;
-            setTimeout(() => statusDiv.textContent = '', 3000);
+            document.getElementById('status').textContent = message;
+            setTimeout(() => document.getElementById('status').textContent = '', 3000);
         }
 
         // Auto-save every 30 seconds while online
