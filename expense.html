@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SplitEase - Expense Sharing App</title>
+  <style>
+    
+
+/* Base Styles */
+:root {
+    --primary-color: #5c6bc0;
+    --primary-dark: #4a57a9;
+    --primary-light: #8e99f3;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+    --text-color: #333;
+    --text-light: #666;
+    --text-lighter: #999;
+    --background-color: #f5f7fa;
+    --card-color: #ffffff;
+    --border-color: #e0e0e0;
+    --border-radius: 8px;
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+header h1 {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#current-user {
+    font-weight: 500;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--border-radius);
+    background-color: #f0f0f0;
+    color: var(--text-color);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn:hover {
+    background-color: #e0e0e0;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.9em;
+}
+
+.btn-cancel {
+    background-color: transparent;
+    color: var(--text-light);
+}
+
+.btn-cancel:hover {
+    background-color: #f0f0f0;
+}
+
+/* Dashboard */
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.balance-card {
+    background-color: var(--card-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.balance {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 10px 0;
+}
+
+.balance.positive {
+    color: var(--success-color);
+}
+
+.balance.negative {
+    color: var(--danger-color);
+}
+
+.balance-summary {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Expenses List */
+.expenses-section {
+    background-color: var(--card-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.expenses-section h2 {
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.expenses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    background-color: #f9f9f9;
+    transition: var(--transition);
+}
+
+.expense-item:hover {
+    background-color: #f0f0f0;
+}
+
+.expense-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.expense-title {
+    font-weight: 600;
+}
+
+.expense-meta {
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+.expense-amount {
+    font-weight: 600;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-lighter);
+    padding: 30px 0;
+}
+
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: var(--card-color);
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-modal {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-lighter);
+}
+
+.close-modal:hover {
+    color: var(--text-color);
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(92, 107, 192, 0.2);
+}
+
+.amount-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 12px;
+    color: var(--text-light);
+}
+
+input[type="number"] {
+    padding-left: 25px;
+}
+
+.participants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.participant-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.split-options {
+    display: flex;
+    gap: 20px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Settlement Plan */
+.settlement-plan {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.settlement-item {
+    padding: 12px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border-radius: var(--border-radius);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.settlement-amount {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.settlement-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* User Selection */
+.user-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.user-option {
+    padding: 12px;
+    border-radius: var(--border-radius);
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.user-option:hover {
+    background-color: #e9ecef;
+}
+
+.user-option.selected {
+    background-color: var(--primary-light);
+    color: white;
+}
+
+/* Unequal Split */
+#unequal-split-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.unequal-split-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.unequal-split-row span {
+    min-width: 100px;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .dashboard {
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    .balance-card {
+        flex: 1;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .modal-content {
+        margin: 20px;
+        width: calc(100% - 40px);
+    }
+
+    .action-buttons {
+        justify-content: center;
+    }
+
+    .btn {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+  </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>SplitEase</h1>
+            <div class="user-info">
+                <span id="current-user">Welcome</span>
+                <button id="change-user-btn" class="btn btn-small">Change User</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="dashboard">
+                <div class="balance-card">
+                    <h2>Your Balance</h2>
+                    <div id="user-balance" class="balance">Rs.0.00</div>
+                    <div id="balance-summary" class="balance-summary"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="add-expense-btn" class="btn btn-primary">Add Expense</button>
+                    <button id="add-person-btn" class="btn">Add Person</button>
+                    <button id="settle-up-btn" class="btn">Settle Up</button>
+                </div>
+            </section>
+
+            <section class="expenses-section">
+                <h2>Recent Expenses</h2>
+                <div style="margin-bottom: 15px;">
+                    <button id="export-csv-btn" class="btn btn-small">Export as CSV</button>
+                    <button id="export-json-btn" class="btn btn-small">Export as JSON</button>
+                </div>
+                <div id="expenses-list" class="expenses-list">
+                    <!-- Expenses will be added here dynamically -->
+                    <div class="empty-state">No expenses yet. Add your first expense!</div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Add Expense Modal -->
+        <div id="add-expense-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Expense</h2>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <form id="expense-form">
+                    <div class="form-group">
+                        <label for="expense-description">Description</label>
+                        <input type="text" id="expense-description" placeholder="e.g., Dinner at Restaurant" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-amount">Amount</label>
+                        <div class="amount-input">
+                            <span class="currency-symbol">Rs.</span>
+                            <input type="number" id="expense-amount" min="0.01" step="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-date">Date & Time</label>
+                        <input type="datetime-local" id="expense-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-category">Category (optional)</label>
+                        <select id="expense-category">
+                            <option value="">Select a category</option>
+                            <option value="Food">Food</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Housing">Housing</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-payer">Paid by</label>
+                        <select id="expense-payer" required>
+                            <!-- Options will be added dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Split between</label>
+                        <div id="expense-participants" class="participants-list">
+                            <!-- Checkboxes will be added dynamically -->
+                        </div>
+                    </div>
+                    <div class="form-group split-type">
+                        <label>Split type</label>
+                        <div class="split-options">
+                            <label class="radio-label">
+                                <input type="radio" name="split-type" value="equal" checked>
+                                <span>Equal</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="split-type" value="unequal">
+                                <span>Unequal</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="unequal-split-container" class="form-group hidden">
+                        <label>Specify amounts</label>
+                        <div id="unequal-split-inputs">
+                            <!-- Inputs will be added dynamically -->
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Expense</button>
+                        <button type="button" class="btn btn-cancel close-modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Person Modal -->
+        <div id="add-person-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Person</h2>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <form id="person-form">
+                    <div class="form-group">
+                        <label for="person-name">Name</label>
+                        <input type="text" id="person-name" placeholder="Enter name" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Add Person</button>
+                        <button type="button" class="btn btn-cancel close-modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Settle Up Modal -->
+        <div id="settle-up-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settle Up</h2>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div id="settlement-plan" class="settlement-plan">
+                    <!-- Settlement suggestions will be added here -->
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel close-modal">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change User Modal -->
+        <div id="change-user-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Select User</h2>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div id="user-selection" class="user-selection">
+                    <!-- User options will be added here -->
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel close-modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+
+// Initialize the app when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // App state
+    const state = {
+        currentUser: null,
+        people: [],
+        expenses: [],
+        nextPersonId: 1,
+        nextExpenseId: 1
+    };
+
+    // DOM Elements
+    const elements = {
+        currentUserDisplay: document.getElementById('current-user'),
+        userBalance: document.getElementById('user-balance'),
+        balanceSummary: document.getElementById('balance-summary'),
+        expensesList: document.getElementById('expenses-list'),
+        
+        // Buttons
+        addExpenseBtn: document.getElementById('add-expense-btn'),
+        addPersonBtn: document.getElementById('add-person-btn'),
+        settleUpBtn: document.getElementById('settle-up-btn'),
+        changeUserBtn: document.getElementById('change-user-btn'),
+        
+        // Modals
+        addExpenseModal: document.getElementById('add-expense-modal'),
+        addPersonModal: document.getElementById('add-person-modal'),
+        settleUpModal: document.getElementById('settle-up-modal'),
+        changeUserModal: document.getElementById('change-user-modal'),
+        
+        // Forms
+        expenseForm: document.getElementById('expense-form'),
+        personForm: document.getElementById('person-form'),
+        
+        // Form elements
+        expensePayer: document.getElementById('expense-payer'),
+        expenseParticipants: document.getElementById('expense-participants'),
+        unequalSplitContainer: document.getElementById('unequal-split-container'),
+        unequalSplitInputs: document.getElementById('unequal-split-inputs'),
+        
+        // Settlement and user selection
+        settlementPlan: document.getElementById('settlement-plan'),
+        userSelection: document.getElementById('user-selection')
+    };
+
+    // Initialize the app
+    function init() {
+        loadData();
+        setupEventListeners();
+        
+        // If no people exist, show add person modal
+        if (state.people.length === 0) {
+            showModal(elements.addPersonModal);
+        } else if (!state.currentUser) {
+            // If people exist but no current user is set
+            showModal(elements.changeUserModal);
+        } else {
+            updateUI();
+        }
+    }
+
+    // Load data from localStorage
+    function loadData() {
+        const savedData = localStorage.getItem('splitEaseData');
+        if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            state.people = parsedData.people || [];
+            state.expenses = parsedData.expenses || [];
+            state.currentUser = parsedData.currentUser || null;
+            state.nextPersonId = parsedData.nextPersonId || 1;
+            state.nextExpenseId = parsedData.nextExpenseId || 1;
+        }
+    }
+
+    // Save data to localStorage
+    function saveData() {
+        localStorage.setItem('splitEaseData', JSON.stringify({
+            people: state.people,
+            expenses: state.expenses,
+            currentUser: state.currentUser,
+            nextPersonId: state.nextPersonId,
+            nextExpenseId: state.nextExpenseId
+        }));
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+        // Button click listeners
+        elements.addExpenseBtn.addEventListener('click', () => showModal(elements.addExpenseModal));
+        elements.addPersonBtn.addEventListener('click', () => showModal(elements.addPersonModal));
+        elements.settleUpBtn.addEventListener('click', showSettlementPlan);
+        elements.changeUserBtn.addEventListener('click', () => showModal(elements.changeUserModal));
+        
+        // Close modal buttons
+        document.querySelectorAll('.close-modal').forEach(button => {
+            button.addEventListener('click', closeAllModals);
+        });
+        
+        // Form submissions
+        elements.expenseForm.addEventListener('submit', handleExpenseSubmit);
+        elements.personForm.addEventListener('submit', handlePersonSubmit);
+        
+        // Split type change
+        document.querySelectorAll('input[name="split-type"]').forEach(radio => {
+            radio.addEventListener('change', toggleSplitType);
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeAllModals();
+            }
+        });
+
+        // Export buttons
+        document.getElementById('export-csv-btn').addEventListener('click', exportExpensesAsCSV);
+        document.getElementById('export-json-btn').addEventListener('click', exportExpensesAsJSON);
+    }
+
+    // Show a modal
+    function showModal(modal) {
+        // Close all modals first
+        closeAllModals();
+        
+        // Prepare modal content
+        if (modal === elements.addExpenseModal) {
+            prepareExpenseModal();
+        } else if (modal === elements.changeUserModal) {
+            prepareUserSelectionModal();
+        }
+        
+        // Show the modal
+        modal.style.display = 'block';
+    }
+
+    // Close all modals
+    function closeAllModals() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+    }
+
+    // Prepare expense modal before showing
+    function prepareExpenseModal() {
+        // Set default date and time to now
+        const now = new Date();
+        const tzOffset = now.getTimezoneOffset() * 60000;
+        const localISOTime = new Date(now - tzOffset).toISOString().slice(0,16);
+
+        elements.expenseForm.reset(); // Reset form first
+        document.getElementById('expense-date').value = localISOTime; // Then set default value
+
+        // Populate payer dropdown
+        elements.expensePayer.innerHTML = '';
+        state.people.forEach(person => {
+            const option = document.createElement('option');
+            option.value = person.id;
+            option.textContent = person.name;
+            if (person.id === state.currentUser) {
+                option.selected = true;
+            }
+            elements.expensePayer.appendChild(option);
+        });
+        
+        // Populate participants list
+        elements.expenseParticipants.innerHTML = '';
+        state.people.forEach(person => {
+            const label = document.createElement('label');
+            label.className = 'participant-checkbox';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = person.id;
+            checkbox.checked = true; // Default all checked
+            checkbox.dataset.name = person.name;
+            
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(person.name));
+            elements.expenseParticipants.appendChild(label);
+        });
+        
+        // Reset split type to equal
+        document.querySelector('input[name="split-type"][value="equal"]').checked = true;
+        elements.unequalSplitContainer.classList.add('hidden');
+    }
+
+    // Prepare user selection modal
+    function prepareUserSelectionModal() {
+        elements.userSelection.innerHTML = '';
+        
+        state.people.forEach(person => {
+            const userOption = document.createElement('div');
+            userOption.className = 'user-option';
+            if (person.id === state.currentUser) {
+                userOption.classList.add('selected');
+            }
+            userOption.textContent = person.name;
+            userOption.dataset.id = person.id;
+            
+            userOption.addEventListener('click', function() {
+                state.currentUser = parseInt(this.dataset.id);
+                saveData();
+                closeAllModals();
+                updateUI();
+            });
+            
+            elements.userSelection.appendChild(userOption);
+        });
+    }
+
+    // Toggle between equal and unequal split
+    function toggleSplitType(event) {
+        const splitType = event.target.value;
+        
+        if (splitType === 'unequal') {
+            elements.unequalSplitContainer.classList.remove('hidden');
+            
+            // Create input fields for each participant
+            elements.unequalSplitInputs.innerHTML = '';
+            const checkedParticipants = Array.from(
+                elements.expenseParticipants.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            
+            checkedParticipants.forEach(participant => {
+                const row = document.createElement('div');
+                row.className = 'unequal-split-row';
+                
+                const span = document.createElement('span');
+                span.textContent = participant.dataset.name;
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.step = '0.01';
+                input.placeholder = '0.00';
+                input.dataset.id = participant.value;
+                
+                row.appendChild(span);
+                row.appendChild(input);
+                elements.unequalSplitInputs.appendChild(row);
+            });
+        } else {
+            elements.unequalSplitContainer.classList.add('hidden');
+        }
+    }
+
+    // Handle expense form submission
+    function handleExpenseSubmit(event) {
+        event.preventDefault();
+        
+        const description = document.getElementById('expense-description').value;
+        const amount = parseFloat(document.getElementById('expense-amount').value);
+        const date = document.getElementById('expense-date').value;
+        const category = document.getElementById('expense-category').value;
+        const payerId = parseInt(elements.expensePayer.value);
+        
+        // Get selected participants
+        const participantIds = Array.from(
+            elements.expenseParticipants.querySelectorAll('input[type="checkbox"]:checked')
+        ).map(checkbox => parseInt(checkbox.value));
+        
+        if (participantIds.length === 0) {
+            alert('Please select at least one participant');
+            return;
+        }
+        
+        // Get split type
+        const splitType = document.querySelector('input[name="split-type"]:checked').value;
+        
+        let shares = {};
+        
+        if (splitType === 'equal') {
+            // Equal split
+            const shareAmount = amount / participantIds.length;
+            participantIds.forEach(id => {
+                shares[id] = shareAmount;
+            });
+        } else {
+            // Unequal split
+            const inputs = elements.unequalSplitInputs.querySelectorAll('input[type="number"]');
+            let totalSpecified = 0;
+            
+            inputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                shares[input.dataset.id] = value;
+                totalSpecified += value;
+            });
+            
+            // Validate total
+            if (Math.abs(totalSpecified - amount) > 0.01) {
+                alert(`The sum of individual amounts (${totalSpecified.toFixed(2)}) must equal the total expense (${amount.toFixed(2)})`);
+                return;
+            }
+        }
+        
+        // Create new expense
+        const newExpense = {
+            id: state.nextExpenseId++,
+            description,
+            amount,
+            date,
+            category,
+            payerId,
+            shares
+        };
+        
+        // Add to expenses array
+        state.expenses.push(newExpense);
+        
+        // Save and update UI
+        saveData();
+        updateUI();
+        closeAllModals();
+    }
+
+    // Handle person form submission
+    function handlePersonSubmit(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('person-name').value.trim();
+        
+        if (!name) {
+            alert('Please enter a name');
+            return;
+        }
+        
+        // Check for duplicate names
+        if (state.people.some(person => person.name.toLowerCase() === name.toLowerCase())) {
+            alert('A person with this name already exists');
+            return;
+        }
+        
+        // Create new person
+        const newPerson = {
+            id: state.nextPersonId++,
+            name
+        };
+        
+        // Add to people array
+        state.people.push(newPerson);
+        
+        // If this is the first person, set as current user
+        if (state.people.length === 1) {
+            state.currentUser = newPerson.id;
+        }
+        
+        // Save and update UI
+        saveData();
+        updateUI();
+        closeAllModals();
+        
+        // If we just added the first person, show the change user modal
+        if (state.people.length === 1) {
+            elements.currentUserDisplay.textContent = `Current User: ${newPerson.name}`;
+        }
+    }
+
+    // Show settlement plan
+    function showSettlementPlan() {
+        // Calculate balances
+        const balances = calculateBalances();
+
+        // Generate settlement plan
+        const settlements = generateSettlementPlan(balances);
+
+        // Display in modal
+        elements.settlementPlan.innerHTML = '';
+
+        if (settlements.length === 0) {
+            const noSettlements = document.createElement('div');
+            noSettlements.className = 'empty-state';
+            noSettlements.textContent = 'Everyone is settled up!';
+            elements.settlementPlan.appendChild(noSettlements);
+        } else {
+            // Separate settlements for current user
+            const currentUserId = state.currentUser;
+            const toPay = settlements.filter(s => s.from === currentUserId);
+            const toTake = settlements.filter(s => s.to === currentUserId);
+            const others = settlements.filter(s => s.from !== currentUserId && s.to !== currentUserId);
+
+            if (toPay.length > 0) {
+                const payHeader = document.createElement('div');
+                payHeader.className = 'settlement-header';
+                payHeader.textContent = 'You owe:';
+                elements.settlementPlan.appendChild(payHeader);
+
+                toPay.forEach(settlement => {
+                    const settlementItem = document.createElement('div');
+                    settlementItem.className = 'settlement-item';
+
+                    const fromTo = document.createElement('div');
+                    fromTo.textContent = `You pay ${getPerson(settlement.to).name}`;
+
+                    const amount = document.createElement('div');
+                    amount.className = 'settlement-amount';
+                    amount.textContent = `Rs.${settlement.amount.toFixed(2)}`;
+
+                    settlementItem.appendChild(fromTo);
+                    settlementItem.appendChild(amount);
+                    elements.settlementPlan.appendChild(settlementItem);
+                });
+            }
+
+            if (toTake.length > 0) {
+                const takeHeader = document.createElement('div');
+                takeHeader.className = 'settlement-header';
+                takeHeader.textContent = 'You are owed:';
+                elements.settlementPlan.appendChild(takeHeader);
+
+                toTake.forEach(settlement => {
+                    const settlementItem = document.createElement('div');
+                    settlementItem.className = 'settlement-item';
+
+                    const fromTo = document.createElement('div');
+                    fromTo.textContent = `${getPerson(settlement.from).name} pays you`;
+
+                    const amount = document.createElement('div');
+                    amount.className = 'settlement-amount';
+                    amount.textContent = `Rs.${settlement.amount.toFixed(2)}`;
+
+                    settlementItem.appendChild(fromTo);
+                    settlementItem.appendChild(amount);
+                    elements.settlementPlan.appendChild(settlementItem);
+                });
+            }
+
+            if (others.length > 0) {
+                const othersHeader = document.createElement('div');
+                othersHeader.className = 'settlement-header';
+                othersHeader.textContent = 'Other settlements:';
+                elements.settlementPlan.appendChild(othersHeader);
+
+                others.forEach(settlement => {
+                    const settlementItem = document.createElement('div');
+                    settlementItem.className = 'settlement-item';
+
+                    const fromTo = document.createElement('div');
+                    fromTo.textContent = `${getPerson(settlement.from).name} pays ${getPerson(settlement.to).name}`;
+
+                    const amount = document.createElement('div');
+                    amount.className = 'settlement-amount';
+                    amount.textContent = `Rs.${settlement.amount.toFixed(2)}`;
+
+                    settlementItem.appendChild(fromTo);
+                    settlementItem.appendChild(amount);
+                    elements.settlementPlan.appendChild(settlementItem);
+                });
+            }
+        }
+
+        showModal(elements.settleUpModal);
+    }
+
+    // Update the UI based on current state
+    function updateUI() {
+        if (!state.currentUser) return;
+        
+        const currentPerson = getPerson(state.currentUser);
+        elements.currentUserDisplay.textContent = `Current User: ${currentPerson.name}`;
+        
+        // Calculate balances
+        const balances = calculateBalances();
+        const currentBalance = balances[state.currentUser] || 0;
+        
+        // Update balance display
+        elements.userBalance.textContent = `Rs.${Math.abs(currentBalance).toFixed(2)}`;
+        elements.userBalance.className = 'balance';
+        
+        if (currentBalance > 0) {
+            elements.userBalance.classList.add('positive');
+            elements.balanceSummary.textContent = 'You are owed money';
+        } else if (currentBalance < 0) {
+            elements.userBalance.classList.add('negative');
+            elements.balanceSummary.textContent = 'You owe money';
+        } else {
+            elements.balanceSummary.textContent = 'You are all settled up';
+        }
+        
+        // Update expenses list
+        updateExpensesList();
+    }
+
+    // Update the expenses list
+    function updateExpensesList() {
+        elements.expensesList.innerHTML = '';
+        
+        if (state.expenses.length === 0) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.textContent = 'No expenses yet. Add your first expense!';
+            elements.expensesList.appendChild(emptyState);
+            return;
+        }
+        
+        // Sort expenses by date (newest first)
+        const sortedExpenses = [...state.expenses].sort((a, b) => 
+            new Date(b.date) - new Date(a.date)
+        );
+        
+        sortedExpenses.forEach(expense => {
+            const expenseItem = document.createElement('div');
+            expenseItem.className = 'expense-item';
+            
+            const details = document.createElement('div');
+            details.className = 'expense-details';
+            
+            const title = document.createElement('div');
+            title.className = 'expense-title';
+            title.textContent = expense.description;
+            
+            const meta = document.createElement('div');
+            meta.className = 'expense-meta';
+            
+            const payer = getPerson(expense.payerId);
+            const date = new Date(expense.date);
+            meta.textContent = `Paid by ${payer.name} • ${date.toLocaleString()}`;
+            
+            if (expense.category) {
+                meta.textContent += ` • ${expense.category}`;
+            }
+            
+            const amount = document.createElement('div');
+            amount.className = 'expense-amount';
+            amount.textContent = `Rs.${expense.amount.toFixed(2)}`;
+            
+            details.appendChild(title);
+            details.appendChild(meta);
+            expenseItem.appendChild(details);
+            expenseItem.appendChild(amount);
+            
+            elements.expensesList.appendChild(expenseItem);
+        });
+    }
+
+    // Calculate balances for all people
+    function calculateBalances() {
+        const balances = {};
+        
+        // Initialize balances to 0
+        state.people.forEach(person => {
+            balances[person.id] = 0;
+        });
+        
+        // Process each expense
+        state.expenses.forEach(expense => {
+            const payer = expense.payerId;
+            
+            // Add the full amount to the payer's balance
+            balances[payer] += expense.amount;
+            
+            // Subtract each person's share
+            Object.entries(expense.shares).forEach(([personId, share]) => {
+                balances[personId] -= share;
+            });
+        });
+        
+        return balances;
+    }
+
+    // Generate a settlement plan
+    function generateSettlementPlan(balances) {
+        const settlements = [];
+        
+        // Create arrays of debtors and creditors
+        const debtors = [];
+        const creditors = [];
+        
+        Object.entries(balances).forEach(([personId, balance]) => {
+            personId = parseInt(personId);
+            
+            if (balance < -0.01) { // Debtor (owes money)
+                debtors.push({ id: personId, amount: Math.abs(balance) });
+            } else if (balance > 0.01) { // Creditor (is owed money)
+                creditors.push({ id: personId, amount: balance });
+            }
+        });
+        
+        // Sort by amount (largest first)
+        debtors.sort((a, b) => b.amount - a.amount);
+        creditors.sort((a, b) => b.amount - a.amount);
+        
+        // Generate settlements
+        while (debtors.length > 0 && creditors.length > 0) {
+            const debtor = debtors[0];
+            const creditor = creditors[0];
+            
+            // Calculate the amount to settle
+            const amount = Math.min(debtor.amount, creditor.amount);
+            
+            // Create settlement
+            settlements.push({
+                from: debtor.id,
+                to: creditor.id,
+                amount: amount
+            });
+            
+            // Update amounts
+            debtor.amount -= amount;
+            creditor.amount -= amount;
+            
+            // Remove if fully settled
+            if (debtor.amount < 0.01) debtors.shift();
+            if (creditor.amount < 0.01) creditors.shift();
+        }
+        
+        return settlements;
+    }
+
+    // Helper function to get a person by ID
+    function getPerson(id) {
+        return state.people.find(person => person.id === parseInt(id));
+    }
+
+    // Export as CSV
+    function exportExpensesAsCSV() {
+        if (state.expenses.length === 0) {
+            alert('No expenses to export.');
+            return;
+        }
+        const header = ['Description', 'Amount', 'Date', 'Category', 'Paid By', 'Participants', 'Shares'];
+        const rows = state.expenses.map(exp => {
+            const payer = getPerson(exp.payerId)?.name || '';
+            const participants = Object.keys(exp.shares)
+                .map(id => getPerson(id)?.name)
+                .join(', ');
+            const shares = Object.entries(exp.shares)
+                .map(([id, share]) => `${getPerson(id)?.name}: Rs.${share.toFixed(2)}`)
+                .join('; ');
+            return [
+                `"${exp.description}"`,
+                exp.amount,
+                `"${new Date(exp.date).toLocaleString()}"`,
+                `"${exp.category || ''}"`,
+                `"${payer}"`,
+                `"${participants}"`,
+                `"${shares}"`
+            ].join(',');
+        });
+        const csvContent = [header.join(','), ...rows].join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'expenses.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // Export as JSON
+    function exportExpensesAsJSON() {
+        if (state.expenses.length === 0) {
+            alert('No expenses to export.');
+            return;
+        }
+        const data = JSON.stringify(state.expenses, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'expenses.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // Initialize the app
+    init();
+});
+
+    </script>
+</body>
+</html>
+
